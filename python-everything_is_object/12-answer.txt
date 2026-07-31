@@ -1,2 +1,1 @@
-git add 12-answer.txt
-git commit -m "Add answer for list equality with reference assignment"
+True
