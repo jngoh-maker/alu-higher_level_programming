@@ -1,0 +1,46 @@
+#!/usr/bin/bash
+
+# Gather all files (recursively), excluding anything inside .git,
+# and skip directories. Sorted for deterministic order.
+mapfile -t files < <(find . -type f ! -path './.git/*' | sort)
+
+if [ ${#files[@]} -eq 0 ]; then
+    echo "No files found to commit."
+    exit 1
+fi
+
+for file in "${files[@]}"; do
+    echo "=============================="
+    echo "File: $file"
+
+    # Determine type from extension
+    ext="${file##*.}"
+    case "${ext,,}" in
+        py)   type="Python" ;;
+        pyc)  type="Python Compiled" ;;
+        md)   type="Markdown" ;;
+        txt)  type="Text" ;;
+	sh)   type="Shell";;
+        *)    type="File" ;;
+    esac
+
+    echo "Type: $type"
+    echo "=============================="
+    echo ""
+
+    # Extract leading digits from the basename for the task number
+    base=$(basename "$file")
+    task_num=$(echo "$base" | grep -oP '^\d+')
+    if [ -z "$task_num" ]; then
+        task_num="something"
+    fi
+
+    chmod +x "$file"
+
+    git add "$file"
+
+
+    git commit -m "completed task #$task_num which was a $type"
+    git push
+
+done
